@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "953718252250",
+    "project_id": "furever-23375",
+    "storage_bucket": "furever-23375.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:953718252250:android:38fc6d5a70ffeaa53bbbe3",
+        "android_client_info": {
+          "package_name": "com.example.furever"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChaYcUdeQo3Mj9CtJKOBmxfOSVdxbKR1A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
