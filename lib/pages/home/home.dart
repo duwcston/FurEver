@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furever/pages/profile/profile.dart';
+import 'package:furever/pages/scanner/scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -41,7 +42,10 @@ class Home extends StatelessWidget {
             MaterialPageRoute(builder: (context) => Home()),
           );
         } else if (index == 1) {
-          // Scanner action
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Scanner()),
+          );
         } else if (index == 2) {
           Navigator.push(
             context,

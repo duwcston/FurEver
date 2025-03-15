@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furever/pages/home/home.dart';
+import 'package:furever/pages/scanner/scanner.dart';
 import 'package:furever/services/auth_service.dart';
 
 class Profile extends StatelessWidget {
@@ -69,7 +70,10 @@ class Profile extends StatelessWidget {
             MaterialPageRoute(builder: (context) => Home()),
           );
         } else if (index == 1) {
-          // Scanner action
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Scanner()),
+          );
         } else if (index == 2) {
           Navigator.push(
             context,
