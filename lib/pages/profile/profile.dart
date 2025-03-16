@@ -103,7 +103,7 @@ class Profile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: Colors.black),
         ),
-        minimumSize: const Size(double.infinity, 30),
+        minimumSize: const Size(200, 30),
         elevation: 0,
       ),
       onPressed: () async {
