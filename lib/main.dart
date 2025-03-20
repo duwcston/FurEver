@@ -10,13 +10,6 @@ import 'pages/login/login.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
- if (!File('.env').existsSync()) {
-    print("❌ ERROR: .env file not found!");
-    return;
-  } else {
-    print("✅ .env file found!");
-  }
-
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
