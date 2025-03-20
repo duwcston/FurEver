@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:furever/pages/chat/chat.dart';
+import 'package:furever/pages/map/map.dart';
 import 'package:furever/pages/profile/profile.dart';
 import 'package:furever/pages/scanner/scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,7 +24,7 @@ class Home extends StatelessWidget {
             children: [
               _userPets(),
               const SizedBox(height: 20),
-              _services(),
+              _services(context),
               const SizedBox(height: 20),
               _plans(),
             ],
@@ -117,7 +120,7 @@ class Home extends StatelessWidget {
     );
   }
 
-  Column _services() {
+  Column _services(BuildContext context) {
     return Column(
       children: [
         Row(
@@ -133,52 +136,78 @@ class Home extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              children: [
-                Container(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChatBox()),
+                  );
+                },
+                child: Container(
                   width: 170,
                   height: 100,
                   decoration: BoxDecoration(
                     color: const Color(0xffadf8fd),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Center(
-                    child: Text(
-                      "AI Assistant",
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                        SvgPicture.asset(
+                        'assets/icons/chat.svg',
+                        width: 24,
+                        height: 24,
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "AI Assistant",
+                        style: GoogleFonts.roboto(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            Column(
-              children: [
-                Container(
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MapPage()),
+                  );
+                },
+                child: Container(
                   width: 170,
                   height: 100,
                   decoration: BoxDecoration(
                     color: const Color(0xffadf8fd),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Center(
-                    child: Text(
-                      "Maps",
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset('assets/icons/map.svg'),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Maps",
+                        style: GoogleFonts.roboto(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ],
     );
