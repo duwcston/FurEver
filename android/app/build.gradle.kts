@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -24,13 +27,21 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.furever"
+        applicationId = "com.example.furever"   
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        val dotenv = Properties()
+        val dotenvFile = rootProject.file(".env")
+        if (dotenvFile.exists()) {
+            dotenv.load(FileInputStream(dotenvFile))
+        }
+
+        manifestPlaceholders["MAPS_API_KEY"] = dotenv.getProperty("MAPS_API_KEY", "")
     }
 
     buildTypes {
