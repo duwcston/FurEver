@@ -5,10 +5,26 @@ import 'package:furever/pages/map/map.dart';
 import 'package:furever/pages/profile/profile.dart';
 import 'package:furever/pages/scanner/scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:furever/components/add-pet-form.dart';
+import 'package:furever/components/navbar.dart';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
+
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  List<String> petNames = [];
+
+  void _addPet(String name) {
+    setState(() {
+      petNames.add(name);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,39 +51,8 @@ class Home extends StatelessWidget {
     );
   }
 
-  BottomNavigationBar _navBar(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Home()),
-          );
-        } else if (index == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Scanner()),
-          );
-        } else if (index == 2) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Profile()),
-          );
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_outline),
-          label: "Care",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.camera_alt_outlined),
-          label: "Scanner",
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-      ],
-    );
+  Widget _navBar(BuildContext context) {
+    return NavBar();
   }
 
   Column _plans() {
@@ -159,11 +144,11 @@ class Home extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                        SvgPicture.asset(
+                      SvgPicture.asset(
                         'assets/icons/chat.svg',
                         width: 24,
                         height: 24,
-                        ),
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         "AI Assistant",
@@ -255,21 +240,66 @@ class Home extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(color: Colors.black),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AddPetForm(onPetAdded: _addPet);
+                        },
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            border: Border.all(color: Colors.black),
+                          ),
+
+                          child: const Icon(Icons.add, size: 25),
                         ),
-                        child: const Icon(Icons.add, size: 25),
+                        const SizedBox(height: 8),
+                        const Text("Add Pet"),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ...petNames.map(
+                    (name) => Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Color(
+                                (Random().nextDouble() * 0xFFFFFF).toInt(),
+                              ).withOpacity(1.0),
+                              // Random color
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(color: Colors.black),
+                            ),
+                            child: Center(
+                              child: Text(
+                                name.substring(0, 1).toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(name),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      const Text("Add Pet"),
-                    ],
+                    ),
                   ),
                 ],
               ),

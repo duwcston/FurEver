@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furever/pages/home/home.dart';
 import 'package:furever/pages/scanner/scanner.dart';
 import 'package:furever/services/auth_service.dart';
+import 'package:furever/components/navbar.dart';
 
 class Profile extends StatelessWidget {
   const Profile({super.key});
@@ -60,39 +61,8 @@ class Profile extends StatelessWidget {
     );
   }
 
-  BottomNavigationBar _navBar(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 2,
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Home()),
-          );
-        } else if (index == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Scanner()),
-          );
-        } else if (index == 2) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Profile()),
-          );
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_outline),
-          label: "Care",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.camera_alt_outlined),
-          label: "Scanner",
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-      ],
-    );
+  Widget _navBar(BuildContext context) {
+    return NavBar();
   }
 
   Widget _logout(BuildContext context) {
