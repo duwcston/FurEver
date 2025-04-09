@@ -279,7 +279,7 @@ class _HomeState extends State<Home> {
                             decoration: BoxDecoration(
                               color: Color(
                                 (Random().nextDouble() * 0xFFFFFF).toInt(),
-                              ),
+                              ).withOpacity(1.0),
                               // Random color
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(color: Colors.black),
