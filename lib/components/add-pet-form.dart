@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class AddPetForm extends StatefulWidget {
   const AddPetForm({Key? key, required this.onPetAdded}) : super(key: key);
 
-  final Function(String name) onPetAdded;
+  final Function(String name, String breed, String sex, int age, double weight)
+  onPetAdded;
 
   @override
   _AddPetFormState createState() => _AddPetFormState();
@@ -11,8 +12,9 @@ class AddPetForm extends StatefulWidget {
 
 class _AddPetFormState extends State<AddPetForm> {
   final _formKey = GlobalKey<FormState>();
-  String? breed;
   String? name;
+  String? breed;
+  String? sex;
   int? age;
   double? weight;
 
@@ -47,6 +49,18 @@ class _AddPetFormState extends State<AddPetForm> {
               },
               onSaved: (value) {
                 breed = value;
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Sex'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter the sex';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                sex = value;
               },
             ),
             TextFormField(
@@ -96,7 +110,7 @@ class _AddPetFormState extends State<AddPetForm> {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
               // Call the onPetAdded callback with the pet's name
-              widget.onPetAdded(name!);
+              widget.onPetAdded(name!, breed!, sex!, age!, weight!);
               Navigator.of(context).pop(); // Close the dialog
             }
           },
