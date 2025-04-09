@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furever/pages/home/home.dart';
 import 'package:furever/pages/profile/profile.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:furever/services/auth_service.dart';
+import 'package:furever/pages/schedule/schedule.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({Key? key}) : super(key: key);
@@ -16,7 +14,7 @@ class NavBar extends StatelessWidget {
         if (index == 0) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Home()), // to do
+            MaterialPageRoute(builder: (context) => Schedule()), // TODO
           );
         } else if (index == 1) {
           // Show the AddPetForm when "Add pet" is tapped
@@ -32,11 +30,7 @@ class NavBar extends StatelessWidget {
         }
       },
       items: const [
-        BottomNavigationBarItem(
-          backgroundColor: Colors.grey,
-          icon: Icon(Icons.calendar_today),
-          label: "Schedule",
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Schedule"),
         BottomNavigationBarItem(icon: Icon(Icons.house_rounded), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
       ],
