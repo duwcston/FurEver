@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AddPetForm extends StatefulWidget {
-  const AddPetForm({Key? key, required this.onPetAdded}) : super(key: key);
+  const AddPetForm({super.key, required this.onPetAdded});
 
   final Function(String name) onPetAdded;
 
   @override
-  _AddPetFormState createState() => _AddPetFormState();
+  State<AddPetForm> createState() {
+    return _AddPetFormState();
+  }
 }
 
 class _AddPetFormState extends State<AddPetForm> {

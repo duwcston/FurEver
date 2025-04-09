@@ -4,7 +4,7 @@ import 'package:furever/pages/profile/profile.dart';
 import 'package:furever/pages/schedule/schedule.dart';
 
 class NavBar extends StatelessWidget {
-  const NavBar({Key? key}) : super(key: key);
+  const NavBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class NavBar extends StatelessWidget {
         if (index == 0) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Schedule()), // TODO
+            MaterialPageRoute(builder: (context) => Schedule()),
           );
         } else if (index == 1) {
           // Show the AddPetForm when "Add pet" is tapped
@@ -30,7 +30,10 @@ class NavBar extends StatelessWidget {
         }
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Schedule"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_today),
+          label: "Schedule",
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.house_rounded), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
       ],

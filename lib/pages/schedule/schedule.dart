@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:furever/pages/schedule/task.dart';
+import 'package:furever/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
 class Schedule extends StatefulWidget {
-  const Schedule({Key? key}) : super(key: key);
+  const Schedule({super.key});
 
   @override
   State<Schedule> createState() => _ScheduleState();
@@ -13,7 +13,7 @@ class Schedule extends StatefulWidget {
 class _ScheduleState extends State<Schedule> {
   DateTime _selectedDay = DateTime.now();
   late final ValueNotifier<Map<DateTime, List<Task>>> _tasksNotifier =
-      new ValueNotifier({});
+      ValueNotifier({});
   // final TextEditingController _taskController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -78,7 +78,9 @@ class _ScheduleState extends State<Schedule> {
                     initialTime: TimeOfDay.now(),
                   );
                   if (picked != null) {
-                    _timeController.text = picked.format(context);
+                    if (context.mounted) {
+                      _timeController.text = picked.format(context);
+                    }
                   }
                 },
                 decoration: const InputDecoration(labelText: 'Start Time'),
@@ -120,87 +122,95 @@ class _ScheduleState extends State<Schedule> {
           children: [
             Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    'Selected date: ${DateFormat('MMM dd, yyyy').format(_selectedDay)}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
-                TableCalendar(
-                  focusedDay: _selectedDay,
-                  firstDay: DateTime(2020),
-                  lastDay: DateTime(2050),
-                  calendarFormat: CalendarFormat.month,
-                  selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                  onDaySelected: (selected, focused) {
-                    setState(() {
-                      _selectedDay = selected;
-                    });
-                  },
-                  onFormatChanged: (format) {
-                    setState(() {
-                      if (format == CalendarFormat.month) {
-                        format = CalendarFormat.week;
-                      } else {
-                        format = CalendarFormat.week;
-                      }
-                    });
-                  },
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, day, focusedDay) {
-                      final normalizedDay = _normalizeDate(day);
-                      final hasTask = _tasksNotifier.value.containsKey(
-                        normalizedDay,
-                      );
-
-                      if (hasTask) {
-                        return Container(
-                          margin: const EdgeInsets.all(6.0),
-                          decoration: BoxDecoration(
-                            color: Colors.blueAccent.withOpacity(0.3),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            '${day.day}',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        );
-                      }
-
-                      return null;
-                    },
-                  ),
-                ),
+                _daySelected(),
+                _calendar(),
                 const SizedBox(height: 10),
-                ValueListenableBuilder<Map<DateTime, List<Task>>>(
-                  valueListenable: _tasksNotifier,
-                  builder: (context, tasksMap, _) {
-                    final key = _normalizeDate(_selectedDay);
-                    final tasksForDay = tasksMap[key] ?? [];
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: tasksForDay.length,
-                      itemBuilder: (context, index) {
-                        final task = tasksForDay[index];
-                        return Card(
-                          child: ListTile(
-                            title: Text(task.title),
-                            subtitle: Text(
-                              "${task.description} - ${task.time.format(context)}",
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                _taskList(),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Padding _daySelected() {
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: Text(
+        'Selected date: ${DateFormat('MMM dd, yyyy').format(_selectedDay)}',
+        style: const TextStyle(fontSize: 18),
+      ),
+    );
+  }
+
+  ValueListenableBuilder<Map<DateTime, List<Task>>> _taskList() {
+    return ValueListenableBuilder<Map<DateTime, List<Task>>>(
+      valueListenable: _tasksNotifier,
+      builder: (context, tasksMap, _) {
+        final key = _normalizeDate(_selectedDay);
+        final tasksForDay = tasksMap[key] ?? [];
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: tasksForDay.length,
+          itemBuilder: (context, index) {
+            final task = tasksForDay[index];
+            return Card(
+              child: ListTile(
+                title: Text(task.title),
+                subtitle: Text(
+                  "${task.description} - ${task.time.format(context)}",
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  TableCalendar<dynamic> _calendar() {
+    return TableCalendar(
+      focusedDay: _selectedDay,
+      firstDay: DateTime(2020),
+      lastDay: DateTime(2050),
+      calendarFormat: CalendarFormat.month,
+      selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+      onDaySelected: (selected, focused) {
+        setState(() {
+          _selectedDay = selected;
+        });
+      },
+      onFormatChanged: (format) {
+        setState(() {
+          if (format == CalendarFormat.month) {
+            format = CalendarFormat.week;
+          } else {
+            format = CalendarFormat.week;
+          }
+        });
+      },
+      calendarBuilders: CalendarBuilders(
+        defaultBuilder: (context, day, focusedDay) {
+          final normalizedDay = _normalizeDate(day);
+          final hasTask = _tasksNotifier.value.containsKey(normalizedDay);
+
+          if (hasTask) {
+            return Container(
+              margin: const EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                // ignore: deprecated_member_use
+                color: Colors.blueAccent.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text('${day.day}', style: TextStyle(color: Colors.black)),
+            );
+          }
+
+          return null;
+        },
       ),
     );
   }

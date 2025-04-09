@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:furever/pages/chat/chat.dart';
-import 'package:furever/pages/map/map.dart';
-import 'package:furever/pages/profile/profile.dart';
-import 'package:furever/pages/scanner/scanner.dart';
+import 'package:furever/components/chat/chat.dart';
+import 'package:furever/components/map/map.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:furever/components/add-pet-form.dart';
+import 'package:furever/components/add_pet_form.dart';
 import 'package:furever/components/navbar.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   @override
-  _HomeState createState() => _HomeState();
+  State<Home> createState() {
+    return _HomeState();
+  }
 }
 
 class _HomeState extends State<Home> {
@@ -279,6 +279,7 @@ class _HomeState extends State<Home> {
                             decoration: BoxDecoration(
                               color: Color(
                                 (Random().nextDouble() * 0xFFFFFF).toInt(),
+                              // ignore: deprecated_member_use
                               ).withOpacity(1.0),
                               // Random color
                               borderRadius: BorderRadius.circular(15),
