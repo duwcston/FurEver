@@ -312,18 +312,22 @@ class _HomeState extends State<Home> {
 
   AppBar _appBar() {
     return AppBar(
-      title: const Text(
-        'FurEver\nA Petter Tool ',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+      title: Column(
+        children: [
+          const SizedBox(height: 30),
+          CircleAvatar(radius: 23, child: Image.asset("images/logo.png")),
+          Text("FurEver"),
+        ],
       ),
       centerTitle: true,
+      titleTextStyle: const TextStyle(
+        color: Colors.black,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
       backgroundColor: Colors.white,
       elevation: 0,
-      toolbarHeight: 80, // Add space at the top of the bar
+      toolbarHeight: 100, // Add space at the top of the bar
       leading: GestureDetector(
         onTap: () {},
         child: const Icon(
@@ -332,19 +336,6 @@ class _HomeState extends State<Home> {
           size: 30,
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: GestureDetector(
-            onTap: () {},
-            child: const Icon(
-              Icons.account_circle_outlined,
-              color: Colors.black,
-              size: 30,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
