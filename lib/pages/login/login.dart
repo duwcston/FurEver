@@ -44,15 +44,31 @@ class Login extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Center(
-                child: Text(
-                  'FurEver\nA Petter Tool',
-                  style: GoogleFonts.raleway(
-                    textStyle: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 32,
+                child: Column(
+                  children: [
+                    Image.asset('images/logo.png', width: 100, height: 100),
+                    Text(
+                      'FurEver',
+                      style: GoogleFonts.raleway(
+                        textStyle: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(
+                      'A "petter" tool for your furry friends',
+                      style: GoogleFonts.raleway(
+                        textStyle: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 50),
@@ -163,7 +179,10 @@ class Login extends StatelessWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xffadf8fd),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Color(0xff082024), width: 1)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xff082024), width: 1),
+        ),
         minimumSize: const Size(double.infinity, 60),
         elevation: 0,
       ),
