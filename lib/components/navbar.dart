@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furever/pages/home/home.dart';
+import 'package:furever/pages/mypet/mypet.dart';
 import 'package:furever/pages/profile/profile.dart';
 import 'package:furever/pages/schedule/schedule.dart';
 

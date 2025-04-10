@@ -7,6 +7,7 @@ import 'package:furever/components/add_pet_form.dart';
 import 'package:furever/components/navbar.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:furever/pages/mypet/mypet.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -19,11 +20,34 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<String> petNames = [];
+  List<MyPet> petList = [];
 
-  void _addPet(String name) {
+  void _addPet(String name, String breed, String sex, int age, double weight) {
     setState(() {
-      petNames.add(name);
+      MyPet newPet = MyPet(
+        name: name,
+        breed: breed,
+        sex: sex,
+        age: age,
+        weight: weight,
+      );
+      petList.add(newPet);
     });
+    Navigator.pop(context); // Close the dialog
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => MyPet(
+              name: name,
+              breed: breed,
+              sex: sex,
+              age: age,
+              weight: weight,
+            ),
+      ),
+    );
   }
 
   @override
@@ -200,6 +224,7 @@ class _HomeState extends State<Home> {
 
   Column _userPets() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Welcome, ${FirebaseAuth.instance.currentUser?.email!.toString()}!",
@@ -215,7 +240,7 @@ class _HomeState extends State<Home> {
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Your Pets",
@@ -238,71 +263,83 @@ class _HomeState extends State<Home> {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AddPetForm(onPetAdded: _addPet);
-                        },
-                      );
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: Colors.black),
-                          ),
-
-                          child: const Icon(Icons.add, size: 25),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text("Add Pet"),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  ...petNames.map(
-                    (name) => Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AddPetForm(onPetAdded: _addPet);
+                          },
+                        );
+                      },
                       child: Column(
                         children: [
                           Container(
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: Color(
-                                (Random().nextDouble() * 0xFFFFFF).toInt(),
-                              // ignore: deprecated_member_use
-                              ).withOpacity(1.0),
-                              // Random color
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(color: Colors.black),
                             ),
-                            child: Center(
-                              child: Text(
-                                name.substring(0, 1).toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+
+                            child: const Icon(Icons.add, size: 25),
                           ),
                           const SizedBox(height: 8),
-                          Text(name),
+                          const Text("Add Pet"),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 16),
+
+                    ...petList.map(
+                      (pet) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => pet),
+                                );
+                              },
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Color(
+                                    (Random().nextDouble() * 0xFFFFFF).toInt(),
+                                  ).withOpacity(1.0),
+                                  // Random color
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: Colors.black),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    pet.name.substring(0, 1).toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(pet.name),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -313,18 +350,22 @@ class _HomeState extends State<Home> {
 
   AppBar _appBar() {
     return AppBar(
-      title: const Text(
-        'FurEver\nA Petter Tool ',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+      title: Column(
+        children: [
+          const SizedBox(height: 30),
+          CircleAvatar(radius: 23, child: Image.asset("images/logo.png")),
+          Text("FurEver"),
+        ],
       ),
       centerTitle: true,
+      titleTextStyle: const TextStyle(
+        color: Colors.black,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
       backgroundColor: Colors.white,
       elevation: 0,
-      toolbarHeight: 80, // Add space at the top of the bar
+      toolbarHeight: 100, // Add space at the top of the bar
       leading: GestureDetector(
         onTap: () {},
         child: const Icon(
@@ -333,19 +374,6 @@ class _HomeState extends State<Home> {
           size: 30,
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: GestureDetector(
-            onTap: () {},
-            child: const Icon(
-              Icons.account_circle_outlined,
-              color: Colors.black,
-              size: 30,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
