@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:furever/models/pet.dart';
 
 class AddPetForm extends StatefulWidget {
   const AddPetForm({super.key, required this.onPetAdded});
 
-  final Function(String name, String breed, String sex, int age, double weight)
-  onPetAdded;
+  final Function(Pet pet) onPetAdded;
 
   @override
   State<AddPetForm> createState() {
@@ -112,7 +112,15 @@ class _AddPetFormState extends State<AddPetForm> {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
               // Call the onPetAdded callback with the pet's name
-              widget.onPetAdded(name!, breed!, sex!, age!, weight!);
+              final pet = Pet(
+                name: name!,
+                breed: breed!,
+                sex: sex!,
+                age: age!,
+                weight: weight!,
+              );
+
+              widget.onPetAdded(pet);
               Navigator.of(context).pop(); // Close the dialog
             }
           },
