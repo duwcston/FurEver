@@ -20,7 +20,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<String> petNames = [];
   List<Pet> petList = [];
 
   void _addPet(Pet pet) {
