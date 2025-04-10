@@ -1,0 +1,114 @@
+[
+    {
+      "id": "shop1",
+      "lat": 10.801180,
+      "lng": 106.635040,
+      "title": "Phòng Khám Thú Y Home Vet",
+      "address": "58/3 Quốc Lộ 22, Ấp Xuân Thới Đông 2, Xã Xuân Thới Đông, Huyện Hóc Môn, Thành phố Hồ Chí Minh",
+      "phone": "0971357089"
+    },
+    {
+      "id": "shop2",
+      "lat": 10.815580,
+      "lng": 106.776230,
+      "title": "Phòng Khám Thú Y - 24/7 Pet Clinic",
+      "address": "94 Đỗ Xuân Hợp, Khu phố 6, Phường Phước Long A, Thành Phố Thủ Đức, Thành phố Hồ Chí Minh",
+      "phone": "0901827359"
+    },
+    {
+      "id": "shop3",
+      "lat": 10.822350,
+      "lng": 106.688530,
+      "title": "Phòng Khám Thú Y Pet Plus",
+      "address": "430 Nguyễn Thái Sơn, Phường 5, Quận Gò Vấp, Thành phố Hồ Chí Minh",
+      "phone": "0932375639"
+    },
+    {
+      "id": "shop4",
+      "lat": 10.762960,
+      "lng": 106.681950,
+      "title": "Bệnh viện thú cưng Pet Mart",
+      "address": "341 Nguyễn Trãi, Phường 7, Quận 5, Thành phố Hồ Chí Minh",
+      "phone": "19002100"
+    },
+    {
+      "id": "shop5",
+      "lat": 10.738000,
+      "lng": 106.676000,
+      "title": "Phòng khám thú y PetLove",
+      "address": "29 Hoàng Lê Kha, Quận 6, Thành phố Hồ Chí Minh",
+      "phone": "0978560301"
+    },
+    {
+      "id": "shop6",
+      "lat": 10.738000,
+      "lng": 106.676000,
+      "title": "Phòng khám thú y K9",
+      "address": "319 – 321 Lê Văn Lương, Phường Tân Quy, Quận 7, Thành phố Hồ Chí Minh",
+      "phone": "02837750894"
+    },
+    {
+      "id": "shop7",
+      "lat": 10.738000,
+      "lng": 106.676000,
+      "title": "Phòng khám bác sĩ thú y – Dr. Kim Thanh",
+      "address": "6 Trần Hưng Đạo, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh",
+      "phone": "02835037065"
+    },
+    {
+      "id": "shop8",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Bệnh viện thú cưng Pet Mart",
+      "address": "116 Ba Tháng Hai, Phường 12, Quận 10, Thành phố Hồ Chí Minh",
+      "phone": "19002100"
+    },
+    {
+      "id": "shop9",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Phòng khám thú y ThiThi Pet Clinic",
+      "address": "Số 3A, Đường Hòa Bình, Phường 3, Quận 11, Thành phố Hồ Chí Minh",
+      "phone": "0978899004"
+    },
+    {
+      "id": "shop10",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Phòng khám thú y Family Vet",
+      "address": "04 Nguyễn Cửu Vân, Phường 17, Quận Bình Thạnh, Thành phố Hồ Chí Minh",
+      "phone": "02835147599"
+    },
+    {
+      "id": "shop11",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Phòng khám thú y Family Vet",
+      "address": "72 Hữu Nghị, Phường Bình Thọ, Thành Phố Thủ Đức, Thành phố Hồ Chí Minh",
+      "phone": "02835071151"
+    },
+    {
+      "id": "shop12",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Phòng khám thú y SAMYANG CLINIC",
+      "address": "Lô G60 tầng G, Aeon mall Celadon Tân Phú, Thành phố Hồ Chí Minh",
+      "phone": "0964499704"
+    },
+    {
+      "id": "shop13",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Phòng khám thú y SAMYANG CLINIC",
+      "address": "76 Cao Triều Phát, Hưng Gia 4, Tân Phong, Quận 7, Thành phố Hồ Chí Minh",
+      "phone": "02854106679"
+    },
+    {
+      "id": "shop14",
+      "lat": 10.776889,
+      "lng": 106.700897,
+      "title": "Phòng khám thú y SAMYANG CLINIC",
+      "address": "A0108 Tầng 1, T5 Masteri, Phường Thảo Điền, Quận 2, Thành phố Hồ Chí Minh",
+      "phone": "02836367582"
+    }
+]

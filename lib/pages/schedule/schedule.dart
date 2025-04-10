@@ -13,7 +13,7 @@ class Schedule extends StatefulWidget {
 class _ScheduleState extends State<Schedule> {
   DateTime _selectedDay = DateTime.now();
   late final ValueNotifier<Map<DateTime, List<Task>>> _tasksNotifier =
-      new ValueNotifier({});
+       ValueNotifier({});
   // final TextEditingController _taskController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -158,7 +158,7 @@ class _ScheduleState extends State<Schedule> {
                         return Container(
                           margin: const EdgeInsets.all(6.0),
                           decoration: BoxDecoration(
-                            color: Colors.blueAccent.withOpacity(0.3),
+                            color: Colors.blueAccent.withValues(alpha: 0.5),
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
