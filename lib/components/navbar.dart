@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:furever/pages/home/home.dart';
-import 'package:furever/pages/mypet/mypet.dart';
 import 'package:furever/pages/profile/profile.dart';
 import 'package:furever/pages/schedule/schedule.dart';
 
 class NavBar extends StatelessWidget {
-  const NavBar({super.key});
+  final int currentIndex;
+  
+  const NavBar({super.key, required this.currentIndex});
 
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: 0,
+      currentIndex: currentIndex,
       onTap: (index) {
         if (index == 0) {
           Navigator.push(
@@ -18,7 +19,6 @@ class NavBar extends StatelessWidget {
             MaterialPageRoute(builder: (context) => Schedule()),
           );
         } else if (index == 1) {
-          // Show the AddPetForm when "Add pet" is tapped
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => Home()),

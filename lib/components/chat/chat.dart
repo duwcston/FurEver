@@ -29,7 +29,7 @@ class _ChatBoxState extends State<ChatBox> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Chat Box')),
-      body: Column(children: [_messageField(), _inputField()]),
+      body: SafeArea(child: Column(children: [_messageField(), _inputField()])),
     );
   }
 
@@ -57,8 +57,22 @@ class _ChatBoxState extends State<ChatBox> {
   }
 
   Expanded _messageField() {
+    final ScrollController scrollController = ScrollController();
+    
+    // Scroll to bottom after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_messages.isNotEmpty) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+    
     return Expanded(
       child: ListView.builder(
+        controller: scrollController,
         itemCount: _messages.length,
         itemBuilder: (context, index) {
           return ListTile(

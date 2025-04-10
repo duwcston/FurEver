@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:furever/services/auth_service.dart';
 import 'package:furever/components/navbar.dart';
@@ -60,7 +61,7 @@ class Profile extends StatelessWidget {
   }
 
   Widget _navBar(BuildContext context) {
-    return NavBar();
+    return NavBar(currentIndex: 2);
   }
 
   Widget _logout(BuildContext context) {
@@ -90,8 +91,8 @@ class Profile extends StatelessWidget {
           decoration: const BoxDecoration(
             color: Color(0xFFB2EBF2),
             borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(50),
-              bottomRight: Radius.circular(50),
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(16),
             ),
           ),
         ),
@@ -103,13 +104,13 @@ class Profile extends StatelessWidget {
               // backgroundImage:
             ),
             const SizedBox(height: 10),
-            const Text(
-              "Toan Nguyen",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Text(
+              "User",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const Text(
-              "youremail@gmail.com | +01 234 567 89",
-              style: TextStyle(color: Colors.grey),
+            Text(
+              "${FirebaseAuth.instance.currentUser?.email!.toString()} | +01 234 567 89",
+              style: const TextStyle(color: Colors.grey),
             ),
           ],
         ),

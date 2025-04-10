@@ -76,7 +76,7 @@ class _HomeState extends State<Home> {
   }
 
   Widget _navBar(BuildContext context) {
-    return NavBar();
+    return NavBar(currentIndex: 1);
   }
 
   Column _plans() {
@@ -226,9 +226,15 @@ class _HomeState extends State<Home> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Welcome, ${FirebaseAuth.instance.currentUser?.email!.toString()}!",
-          style: GoogleFonts.roboto(fontSize: 24, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            "Welcome, ${FirebaseAuth.instance.currentUser?.email!.toString()}!",
+            style: GoogleFonts.roboto(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         Container(
           margin: const EdgeInsets.only(top: 16),
@@ -240,7 +246,7 @@ class _HomeState extends State<Home> {
           child: Column(
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Your Pets",
@@ -315,6 +321,7 @@ class _HomeState extends State<Home> {
                                 decoration: BoxDecoration(
                                   color: Color(
                                     (Random().nextDouble() * 0xFFFFFF).toInt(),
+                                    // ignore: deprecated_member_use
                                   ).withOpacity(1.0),
                                   // Random color
                                   borderRadius: BorderRadius.circular(15),

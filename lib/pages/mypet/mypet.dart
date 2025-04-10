@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class MyPet extends StatefulWidget {
   const MyPet({
-    Key? key,
+    super.key,
     required this.name,
     required this.breed,
     required this.sex,
     required this.age,
     required this.weight,
-  }) : super(key: key);
+  });
 
   final String name;
   final String breed;
