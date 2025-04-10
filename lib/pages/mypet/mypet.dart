@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:furever/models/pet.dart';
 
 class MyPet extends StatefulWidget {
-  const MyPet({
-    Key? key,
-    required this.name,
-    required this.breed,
-    required this.sex,
-    required this.age,
-    required this.weight,
-  }) : super(key: key);
+  const MyPet({Key? key, required this.pet}) : super(key: key);
 
-  final String name;
-  final String breed;
-  final String sex;
-  final int age;
-  final double weight;
+  final Pet pet;
 
   @override
   State<MyPet> createState() => _MyPetState();
@@ -54,12 +44,13 @@ class _MyPetState extends State<MyPet> {
             "My Pet Information",
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 16),
-          _infoRow("Name", "Buddy"),
-          _infoRow("Breed", "Golden Retriever"),
-          _infoRow("Age", "3 years"),
-          _infoRow("Weight", "30 kg"),
-          _infoRow("Sex", "Male"),
+          _infoRow("Name", widget.pet.name),
+          _infoRow("Breed", widget.pet.breed),
+          _infoRow("Age", widget.pet.age.toString()),
+          _infoRow("Weight", widget.pet.weight.toString()),
+          _infoRow("Sex", widget.pet.sex),
           const SizedBox(height: 16),
           Text(
             "Feeding Info",

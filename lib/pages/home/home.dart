@@ -8,6 +8,7 @@ import 'package:furever/components/navbar.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:furever/pages/mypet/mypet.dart';
+import 'package:furever/models/pet.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,34 +21,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<String> petNames = [];
-  List<MyPet> petList = [];
+  List<Pet> petList = [];
 
-  void _addPet(String name, String breed, String sex, int age, double weight) {
+  void _addPet(Pet pet) {
     setState(() {
-      MyPet newPet = MyPet(
-        name: name,
-        breed: breed,
-        sex: sex,
-        age: age,
-        weight: weight,
-      );
-      petList.add(newPet);
+      petList.add(pet);
     });
-    Navigator.pop(context); // Close the dialog
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => MyPet(
-              name: name,
-              breed: breed,
-              sex: sex,
-              age: age,
-              weight: weight,
-            ),
-      ),
-    );
+    // Navigator.pop(context); // Close the dialog
   }
 
   @override
@@ -306,7 +286,9 @@ class _HomeState extends State<Home> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => pet),
+                                  MaterialPageRoute(
+                                    builder: (context) => MyPet(pet: pet),
+                                  ),
                                 );
                               },
                               child: Container(
