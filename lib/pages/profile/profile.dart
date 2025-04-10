@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:furever/pages/home/home.dart';
-import 'package:furever/pages/scanner/scanner.dart';
 import 'package:furever/services/auth_service.dart';
 import 'package:furever/components/navbar.dart';
 
@@ -15,7 +13,7 @@ class Profile extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            profileHeader(context),
+            _profileHeader(context),
             _profileOption(),
             _logout(context),
           ],
@@ -83,7 +81,7 @@ class Profile extends StatelessWidget {
     );
   }
 
-  Stack profileHeader(BuildContext context) {
+  Stack _profileHeader(BuildContext context) {
     return Stack(
       alignment: Alignment.center,
       children: [
