@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
 
@@ -19,6 +20,21 @@ class _AddPetFormState extends State<AddPetForm> {
   String? sex;
   int? age;
   double? weight;
+
+  Future<void> uploadPetToDb() async {
+    try {
+      final data = await FirebaseFirestore.instance.collection("pets").add({
+        "petName": name.toString().trim(),
+        "petBreed": breed.toString().trim(),
+        "petSex": sex.toString().trim(),
+        "petAge": age,
+        "petWeight": weight,
+      });
+      print('Pet uploaded successfully with id: ${data.id}');
+    } catch (e) {
+      print('Error uploading pet: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +124,7 @@ class _AddPetFormState extends State<AddPetForm> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
               // Call the onPetAdded callback with the pet's name
@@ -119,9 +135,12 @@ class _AddPetFormState extends State<AddPetForm> {
                 age: age!,
                 weight: weight!,
               );
-
               widget.onPetAdded(pet);
-              Navigator.of(context).pop(); // Close the dialog
+              await uploadPetToDb(); // Upload pet to Firestore
+
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Close the dialog
+              }
             }
           },
           child: const Text('Submit'),

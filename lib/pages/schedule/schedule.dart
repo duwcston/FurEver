@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:furever/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -7,7 +8,9 @@ class Schedule extends StatefulWidget {
   const Schedule({super.key});
 
   @override
-  State<Schedule> createState() => _ScheduleState();
+  State<Schedule> createState() {
+    return _ScheduleState();
+  }
 }
 
 class _ScheduleState extends State<Schedule> {
@@ -33,6 +36,37 @@ class _ScheduleState extends State<Schedule> {
     final format = DateFormat('h:mm a'); // 'hh:mm a' like "02:45 PM"
     final time = format.parse(cleanInput);
     return TimeOfDay.fromDateTime(time);
+  }
+
+  Future<void> uploadTaskToDb(
+    String title,
+    String description,
+    String timeString,
+  ) async {
+    try {
+      // Parse the time string and combine with selected date
+      final timeOfDay = parseTimeOfDay(timeString);
+
+      // Create a DateTime that combines the selected date with the time
+      final dateTime = DateTime(
+        _selectedDay.year,
+        _selectedDay.month,
+        _selectedDay.day,
+        timeOfDay.hour,
+        timeOfDay.minute,
+      );
+
+      final data = await FirebaseFirestore.instance.collection("tasks").add({
+        "taskTitle": title,
+        "taskDescription": description,
+        "taskTime": Timestamp.fromDate(
+          dateTime,
+        ), // Firebase Timestamp for the specific task time
+      });
+      print('Task uploaded successfully with id: ${data.id}');
+    } catch (e) {
+      print('Error uploading task: $e');
+    }
   }
 
   void _addTask(String title, String description, String startTime) {
@@ -89,14 +123,19 @@ class _ScheduleState extends State<Schedule> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_titleController.text.trim().isNotEmpty) {
-                  _addTask(
-                    _titleController.text.trim(),
-                    _descriptionController.text.trim(),
-                    _timeController.text.trim(),
-                  );
-                  Navigator.pop(context);
+                  // Store the values before they get cleared
+                  final title = _titleController.text.trim();
+                  final description = _descriptionController.text.trim();
+                  final time = _timeController.text.trim();
+
+                  _addTask(title, description, time);
+                  await uploadTaskToDb(title, description, time);
+
+                  if (context.mounted) {
+                    Navigator.of(context).pop(); // Close the dialog
+                  }
                 }
               },
               child: const Text('Add'),

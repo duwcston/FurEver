@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
 
 class MyPet extends StatefulWidget {
-  const MyPet({Key? key, required this.pet}) : super(key: key);
+  const MyPet({super.key, required this.pet});
 
   final Pet pet;
 
