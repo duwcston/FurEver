@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
+import 'package:furever/database/pet_manager.dart';
 
 class AddPetForm extends StatefulWidget {
   const AddPetForm({super.key, required this.onPetAdded});
@@ -137,7 +138,7 @@ class _AddPetFormState extends State<AddPetForm> {
               );
               widget.onPetAdded(pet);
               await uploadPetToDb(); // Upload pet to Firestore
-              
+              await PetManager.fetchPetsFromFirestore(); // Fetch updated pet list
               if (context.mounted) {
                 Navigator.of(context).pop(); // Close the dialog
               }

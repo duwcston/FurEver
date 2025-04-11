@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:furever/models/task.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:furever/database/schedule_manager.dart';
 
 class Schedule extends StatefulWidget {
   const Schedule({super.key});
@@ -15,9 +15,7 @@ class Schedule extends StatefulWidget {
 
 class _ScheduleState extends State<Schedule> {
   DateTime _selectedDay = DateTime.now();
-  late final ValueNotifier<Map<DateTime, List<Task>>> _tasksNotifier =
-      ValueNotifier({});
-  // final TextEditingController _taskController = TextEditingController();
+  final ScheduleManager _scheduleManager = ScheduleManager();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
@@ -28,117 +26,12 @@ class _ScheduleState extends State<Schedule> {
   @override
   void initState() {
     super.initState();
-    fetchTasksFromFirestore();
+    _fetchTasks();
   }
 
-  DateTime _normalizeDate(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
-  }
-
-  TimeOfDay parseTimeOfDay(String input) {
-    final cleanInput =
-        input
-            .replaceAll(RegExp(r'[\u00A0\u2000-\u200F\u202F\u205F\u3000]'), ' ')
-            .replaceAll(RegExp(r'[^\x00-\x7F]'), '')
-            .trim();
-
-    final format = DateFormat('h:mm a'); // 'hh:mm a' like "02:45 PM"
-    final time = format.parse(cleanInput);
-    return TimeOfDay.fromDateTime(time);
-  }
-
-  Future<void> fetchTasksFromFirestore() async {
-    try {
-      // Get all tasks from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection("tasks").get();
-
-      // Create a new map to store the tasks by date
-      final tasksMap = Map<DateTime, List<Task>>.from(_tasksNotifier.value);
-
-      // Clear the existing tasks to avoid duplicates when refreshing
-      tasksMap.clear();
-
-      // Process each document in the query results
-      for (final doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-
-        // Convert Firestore Timestamp to DateTime
-        final Timestamp timestamp = data["taskTime"] as Timestamp;
-        final DateTime taskDateTime = timestamp.toDate();
-
-        // Create a normalized date for grouping tasks by day
-        final DateTime normalizedDate = _normalizeDate(taskDateTime);
-
-        // Extract hour and minute for TimeOfDay
-        final TimeOfDay taskTime = TimeOfDay(
-          hour: taskDateTime.hour,
-          minute: taskDateTime.minute,
-        );
-
-        // Create a Task object
-        final task = Task(
-          title: data["taskTitle"] ?? "",
-          description: data["taskDescription"] ?? "",
-          time: taskTime,
-        );
-
-        // Add the task to the map, grouping by normalized date
-        tasksMap.putIfAbsent(normalizedDate, () => []).add(task);
-      }
-
-      // Update the tasks notifier with the new map
-      _tasksNotifier.value = tasksMap;
-    } catch (e) {
-      print('Error fetching tasks: $e');
-    }
-  }
-
-  Future<void> uploadTaskToDb(
-    String title,
-    String description,
-    String timeString,
-  ) async {
-    try {
-      // Parse the time string and combine with selected date
-      final timeOfDay = parseTimeOfDay(timeString);
-
-      // Create a DateTime that combines the selected date with the time
-      final dateTime = DateTime(
-        _selectedDay.year,
-        _selectedDay.month,
-        _selectedDay.day,
-        timeOfDay.hour,
-        timeOfDay.minute,
-      );
-
-      final data = await FirebaseFirestore.instance.collection("tasks").add({
-        "taskTitle": title,
-        "taskDescription": description,
-        "taskTime": Timestamp.fromDate(
-          dateTime,
-        ), // Firebase Timestamp for the specific task time
-      });
-      print('Task uploaded successfully with id: ${data.id}');
-    } catch (e) {
-      print('Error uploading task: $e');
-    }
-  }
-
-  void _addTask(String title, String description, String startTime) {
-    final key = _normalizeDate(_selectedDay);
-    final task = Task(
-      title: title,
-      description: description,
-      time: parseTimeOfDay(startTime),
-    );
-    final currentTasks = Map<DateTime, List<Task>>.from(_tasksNotifier.value);
-    currentTasks.putIfAbsent(key, () => []).add(task);
-    _tasksNotifier.value = currentTasks;
-
-    _titleController.clear();
-    _descriptionController.clear();
-    _timeController.clear();
+  Future<void> _fetchTasks() async {
+    await _scheduleManager.fetchTasksFromFirestore();
+    setState(() {});
   }
 
   void _showAddTaskDialog() {
@@ -186,8 +79,26 @@ class _ScheduleState extends State<Schedule> {
                   final description = _descriptionController.text.trim();
                   final time = _timeController.text.trim();
 
-                  _addTask(title, description, time);
-                  await uploadTaskToDb(title, description, time);
+                  // Add task locally
+                  _scheduleManager.addTask(
+                    title,
+                    description,
+                    time,
+                    _selectedDay,
+                  );
+
+                  // Upload to Firestore
+                  await _scheduleManager.uploadTaskToDb(
+                    title,
+                    description,
+                    time,
+                    _selectedDay,
+                  );
+
+                  // Clear the text controllers
+                  _titleController.clear();
+                  _descriptionController.clear();
+                  _timeController.clear();
 
                   if (context.mounted) {
                     Navigator.of(context).pop(); // Close the dialog
@@ -239,11 +150,59 @@ class _ScheduleState extends State<Schedule> {
     );
   }
 
+  TableCalendar<dynamic> _calendar() {
+    return TableCalendar(
+      focusedDay: _selectedDay,
+      firstDay: DateTime(2020),
+      lastDay: DateTime(2050),
+      calendarFormat: CalendarFormat.month,
+      daysOfWeekVisible: true,
+      headerStyle: const HeaderStyle(
+        formatButtonVisible: false,
+        titleCentered: true,
+        titleTextStyle: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+      ),
+      onPageChanged: (focusedDay) {
+        setState(() {
+          _selectedDay = focusedDay;
+        });
+      },
+      selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+      onDaySelected: (selected, focused) {
+        setState(() {
+          _selectedDay = selected;
+        });
+      },
+      calendarBuilders: CalendarBuilders(
+        defaultBuilder: (context, day, focusedDay) {
+          final normalizedDay = ScheduleManager.normalizeDate(day);
+          final hasTask = _scheduleManager.tasksNotifier.value.containsKey(
+            normalizedDay,
+          );
+
+          if (hasTask) {
+            return Container(
+              margin: const EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                // ignore: deprecated_member_use
+                color: Colors.blueAccent.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text('${day.day}', style: TextStyle(color: Colors.black)),
+            );
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
   ValueListenableBuilder<Map<DateTime, List<Task>>> _taskList() {
     return ValueListenableBuilder<Map<DateTime, List<Task>>>(
-      valueListenable: _tasksNotifier,
+      valueListenable: _scheduleManager.tasksNotifier,
       builder: (context, tasksMap, _) {
-        final key = _normalizeDate(_selectedDay);
+        final key = ScheduleManager.normalizeDate(_selectedDay);
         final tasksForDay = tasksMap[key] ?? [];
 
         if (tasksForDay.isEmpty) {
@@ -330,37 +289,37 @@ class _ScheduleState extends State<Schedule> {
                     ),
                   ],
                 ),
-                trailing: IconButton(
-                  icon: Icon(
-                    isCompleted
-                        ? Icons.check_circle
-                        : Icons.check_circle_outline,
-                    color: isCompleted ? Colors.green : null,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      if (isCompleted) {
-                        _completedTasks.remove(task.title);
-                      } else {
-                        _completedTasks.add(task.title);
-                      }
-                    });
+                // trailing: IconButton(
+                //   icon: Icon(
+                //     isCompleted
+                //         ? Icons.check_circle
+                //         : Icons.check_circle_outline,
+                //     color: isCompleted ? Colors.green : null,
+                //   ),
+                //   onPressed: () {
+                //     setState(() {
+                //       if (isCompleted) {
+                //         _completedTasks.remove(task.title);
+                //       } else {
+                //         _completedTasks.add(task.title);
+                //       }
+                //     });
 
-                    // Show SnackBar at the bottom of the screen
-                    final snackBar = SnackBar(
-                      content: Text(
-                        isCompleted
-                            ? 'Unmarked "${task.title}" as uncompleted'
-                            : 'Marked "${task.title}" as completed',
-                      ),
-                      duration: const Duration(seconds: 2),
-                      behavior: SnackBarBehavior.fixed,
-                    );
+                //     // Show SnackBar at the bottom of the screen
+                //     final snackBar = SnackBar(
+                //       content: Text(
+                //         isCompleted
+                //             ? 'Unmarked "${task.title}" as uncompleted'
+                //             : 'Marked "${task.title}" as completed',
+                //       ),
+                //       duration: const Duration(seconds: 2),
+                //       behavior: SnackBarBehavior.fixed,
+                //     );
 
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  },
-                ),
+                //     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                //   },
+                // ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
                   vertical: 8.0,
@@ -370,53 +329,6 @@ class _ScheduleState extends State<Schedule> {
           },
         );
       },
-    );
-  }
-
-  TableCalendar<dynamic> _calendar() {
-    return TableCalendar(
-      focusedDay: _selectedDay,
-      firstDay: DateTime(2020),
-      lastDay: DateTime(2050),
-      calendarFormat: CalendarFormat.month,
-      selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-      onDaySelected: (selected, focused) {
-        setState(() {
-          _selectedDay = selected;
-        });
-        // Refresh tasks when a new day is selected
-        fetchTasksFromFirestore();
-      },
-      onFormatChanged: (format) {
-        setState(() {
-          if (format == CalendarFormat.month) {
-            format = CalendarFormat.week;
-          } else {
-            format = CalendarFormat.week;
-          }
-        });
-      },
-      calendarBuilders: CalendarBuilders(
-        defaultBuilder: (context, day, focusedDay) {
-          final normalizedDay = _normalizeDate(day);
-          final hasTask = _tasksNotifier.value.containsKey(normalizedDay);
-
-          if (hasTask) {
-            return Container(
-              margin: const EdgeInsets.all(6.0),
-              decoration: BoxDecoration(
-                // ignore: deprecated_member_use
-                color: Colors.blueAccent.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text('${day.day}', style: TextStyle(color: Colors.black)),
-            );
-          }
-
-          return null;
-        },
-      ),
     );
   }
 }
