@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
 
 class MyPet extends StatefulWidget {
-  const MyPet({Key? key, required this.pet}) : super(key: key);
+  const MyPet({super.key, required this.pet});
 
   final Pet pet;
 
@@ -41,7 +41,7 @@ class _MyPetState extends State<MyPet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "My Pet Information",
+            "${widget.pet.name}'s Information",
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
 

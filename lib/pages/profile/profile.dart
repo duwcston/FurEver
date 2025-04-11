@@ -101,7 +101,8 @@ class Profile extends StatelessWidget {
             const CircleAvatar(
               radius: 50,
               backgroundColor: Colors.white,
-              // backgroundImage:
+              // Add a avatar image here from Icon
+              child: Icon(Icons.account_circle, size: 100, color: Colors.grey),
             ),
             const SizedBox(height: 10),
             Text(
@@ -124,6 +125,11 @@ class Profile extends StatelessWidget {
       actions: [
         IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
       ],
+      title: const Text(
+        "Profile",
+        style: TextStyle(color: Colors.black, fontSize: 20),
+      ),
+      backgroundColor: Colors.white,
     );
   }
 
