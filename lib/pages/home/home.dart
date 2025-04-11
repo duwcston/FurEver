@@ -9,6 +9,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:furever/pages/mypet/mypet.dart';
 import 'package:furever/models/pet.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -22,11 +23,49 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<Pet> petList = [];
 
+  @override
+  void initState() {
+    super.initState();
+    fetchPetsFromFirestore();
+  }
+
+  Future<void> fetchPetsFromFirestore() async {
+    try {
+      final QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection("pets").get();
+
+      setState(() {
+        petList =
+            snapshot.docs.map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+
+              // Handle the case where petWeight might be stored as an int
+              double weight = 0.0;
+              var rawWeight = data['petWeight'];
+              if (rawWeight is int) {
+                weight = rawWeight.toDouble();
+              } else if (rawWeight is double) {
+                weight = rawWeight;
+              }
+
+              return Pet(
+                name: data['petName'] ?? '',
+                breed: data['petBreed'] ?? '',
+                sex: data['petSex'] ?? '',
+                age: data['petAge'] ?? 0,
+                weight: weight,
+              );
+            }).toList();
+      });
+    } catch (e) {
+      print('Error fetching pets: $e');
+    }
+  }
+
   void _addPet(Pet pet) {
     setState(() {
       petList.add(pet);
     });
-    // Navigator.pop(context); // Close the dialog
   }
 
   @override

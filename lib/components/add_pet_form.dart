@@ -137,7 +137,7 @@ class _AddPetFormState extends State<AddPetForm> {
               );
               widget.onPetAdded(pet);
               await uploadPetToDb(); // Upload pet to Firestore
-
+              
               if (context.mounted) {
                 Navigator.of(context).pop(); // Close the dialog
               }

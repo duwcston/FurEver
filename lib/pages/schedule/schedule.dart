@@ -22,6 +22,15 @@ class _ScheduleState extends State<Schedule> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
 
+  // Set to track completed tasks by their title (could use a unique ID in production)
+  final Set<String> _completedTasks = {};
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasksFromFirestore();
+  }
+
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);
   }
@@ -36,6 +45,53 @@ class _ScheduleState extends State<Schedule> {
     final format = DateFormat('h:mm a'); // 'hh:mm a' like "02:45 PM"
     final time = format.parse(cleanInput);
     return TimeOfDay.fromDateTime(time);
+  }
+
+  Future<void> fetchTasksFromFirestore() async {
+    try {
+      // Get all tasks from Firestore
+      final QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection("tasks").get();
+
+      // Create a new map to store the tasks by date
+      final tasksMap = Map<DateTime, List<Task>>.from(_tasksNotifier.value);
+
+      // Clear the existing tasks to avoid duplicates when refreshing
+      tasksMap.clear();
+
+      // Process each document in the query results
+      for (final doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Convert Firestore Timestamp to DateTime
+        final Timestamp timestamp = data["taskTime"] as Timestamp;
+        final DateTime taskDateTime = timestamp.toDate();
+
+        // Create a normalized date for grouping tasks by day
+        final DateTime normalizedDate = _normalizeDate(taskDateTime);
+
+        // Extract hour and minute for TimeOfDay
+        final TimeOfDay taskTime = TimeOfDay(
+          hour: taskDateTime.hour,
+          minute: taskDateTime.minute,
+        );
+
+        // Create a Task object
+        final task = Task(
+          title: data["taskTitle"] ?? "",
+          description: data["taskDescription"] ?? "",
+          time: taskTime,
+        );
+
+        // Add the task to the map, grouping by normalized date
+        tasksMap.putIfAbsent(normalizedDate, () => []).add(task);
+      }
+
+      // Update the tasks notifier with the new map
+      _tasksNotifier.value = tasksMap;
+    } catch (e) {
+      print('Error fetching tasks: $e');
+    }
   }
 
   Future<void> uploadTaskToDb(
@@ -189,17 +245,125 @@ class _ScheduleState extends State<Schedule> {
       builder: (context, tasksMap, _) {
         final key = _normalizeDate(_selectedDay);
         final tasksForDay = tasksMap[key] ?? [];
-        return ListView.builder(
+
+        if (tasksForDay.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                'No tasks for this day',
+                style: TextStyle(fontSize: 16.0, color: Colors.grey),
+              ),
+            ),
+          );
+        }
+
+        return ListView.separated(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: tasksForDay.length,
+          separatorBuilder: (context, index) => const Divider(height: 1),
           itemBuilder: (context, index) {
             final task = tasksForDay[index];
+            final isCompleted = _completedTasks.contains(task.title);
+
             return Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 10.0,
+                vertical: 5.0,
+              ),
               child: ListTile(
-                title: Text(task.title),
-                subtitle: Text(
-                  "${task.description} - ${task.time.format(context)}",
+                leading: Container(
+                  decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
+                    color: Colors.blue.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.pets, color: Colors.blue[700]),
+                  ),
+                ),
+                title: Text(
+                  task.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    decoration:
+                        isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                    color: isCompleted ? Colors.grey : Colors.black,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Text(
+                      task.description,
+                      style: TextStyle(
+                        decoration:
+                            isCompleted
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                        color: isCompleted ? Colors.grey : null,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          task.time.format(context),
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: Icon(
+                    isCompleted
+                        ? Icons.check_circle
+                        : Icons.check_circle_outline,
+                    color: isCompleted ? Colors.green : null,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (isCompleted) {
+                        _completedTasks.remove(task.title);
+                      } else {
+                        _completedTasks.add(task.title);
+                      }
+                    });
+
+                    // Show SnackBar at the bottom of the screen
+                    final snackBar = SnackBar(
+                      content: Text(
+                        isCompleted
+                            ? 'Unmarked "${task.title}" as uncompleted'
+                            : 'Marked "${task.title}" as completed',
+                      ),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.fixed,
+                    );
+
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  },
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
                 ),
               ),
             );
@@ -220,6 +384,8 @@ class _ScheduleState extends State<Schedule> {
         setState(() {
           _selectedDay = selected;
         });
+        // Refresh tasks when a new day is selected
+        fetchTasksFromFirestore();
       },
       onFormatChanged: (format) {
         setState(() {

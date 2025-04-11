@@ -41,7 +41,7 @@ class _MyPetState extends State<MyPet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "My Pet Information",
+            "${widget.pet.name}'s Information",
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
 
