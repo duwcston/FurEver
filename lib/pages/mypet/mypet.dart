@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
+import 'package:furever/services/gemini_service.dart';
 
 class MyPet extends StatefulWidget {
   const MyPet({super.key, required this.pet});
@@ -11,6 +12,49 @@ class MyPet extends StatefulWidget {
 }
 
 class _MyPetState extends State<MyPet> {
+  bool _isLoading = true;
+  String _feedingInfo = "Loading...";
+  String _groomingTips = "Loading...";
+  final GeminiService _geminiService = GeminiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPetCareInfo();
+  }
+
+  Future<void> _loadPetCareInfo() async {
+    setState(() {
+      _isLoading = true;
+      _feedingInfo = "Loading feeding recommendations...";
+      _groomingTips = "Loading grooming tips...";
+    });
+
+    try {
+      final petCareInfo = await _geminiService.generatePetCareInfo(
+        petName: widget.pet.name,
+        breed: widget.pet.breed,
+        sex: widget.pet.sex,
+        age: widget.pet.age,
+        weight: widget.pet.weight,
+      );
+
+      setState(() {
+        _feedingInfo = petCareInfo.feedingInfo;
+        _groomingTips = petCareInfo.groomingTips;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _feedingInfo =
+            "Could not generate feeding information. Please try again later.";
+        _groomingTips =
+            "Could not generate grooming tips. Please try again later.";
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,9 +65,11 @@ class _MyPetState extends State<MyPet> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [_petInfo()],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [_petInfo()],
+            ),
           ),
         ),
       ),
@@ -57,22 +103,44 @@ class _MyPetState extends State<MyPet> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            "Feed Buddy twice a day with high-quality dog food. Ensure fresh water is always available.",
-            style: TextStyle(fontSize: 16),
-          ),
+          _isLoading
+              ? _loadingIndicator()
+              : Text(_feedingInfo, style: TextStyle(fontSize: 16)),
           const SizedBox(height: 16),
           Text(
             "Grooming Tips",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            "Brush Buddy's coat daily to prevent matting. Bathe him once a month or as needed.",
-            style: TextStyle(fontSize: 16),
-          ),
+          _isLoading
+              ? _loadingIndicator()
+              : Text(_groomingTips, style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 16),
+          _isLoading
+              ? Container()
+              : ElevatedButton(
+                onPressed: _loadPetCareInfo,
+                child: const Text("Regenerate Care Info"),
+              ),
         ],
       ),
+    );
+  }
+
+  Widget _loadingIndicator() {
+    return const Row(
+      children: [
+        SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        SizedBox(width: 10),
+        Text(
+          "Generating with AI...",
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
+      ],
     );
   }
 
