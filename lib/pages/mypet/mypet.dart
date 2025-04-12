@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
 import 'package:furever/services/gemini_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyPet extends StatefulWidget {
   const MyPet({super.key, required this.pet});
@@ -20,10 +21,10 @@ class _MyPetState extends State<MyPet> {
   @override
   void initState() {
     super.initState();
-    _loadPetCareInfo();
+    _loadPetCareInfo(forceRegenerate: false);
   }
 
-  Future<void> _loadPetCareInfo() async {
+  Future<void> _loadPetCareInfo({bool forceRegenerate = false}) async {
     setState(() {
       _isLoading = true;
       _feedingInfo = "Loading feeding recommendations...";
@@ -31,12 +32,34 @@ class _MyPetState extends State<MyPet> {
     });
 
     try {
+      // First try to get existing care info from Firestore
+      if (!forceRegenerate) {
+        final existingCareInfo = await _getPetCareInfoFromFirestore();
+
+        if (existingCareInfo != null) {
+          // Use existing data from Firestore
+          setState(() {
+            _feedingInfo = existingCareInfo['feedingInfo'];
+            _groomingTips = existingCareInfo['groomingTips'];
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+
+      // If no existing data or forced regenerate, call Gemini API
       final petCareInfo = await _geminiService.generatePetCareInfo(
         petName: widget.pet.name,
         breed: widget.pet.breed,
         sex: widget.pet.sex,
         age: widget.pet.age,
         weight: widget.pet.weight,
+      );
+
+      // Save the information to Firestore
+      await _savePetCareInfoToFirestore(
+        feedingInfo: petCareInfo.feedingInfo,
+        groomingTips: petCareInfo.groomingTips,
       );
 
       setState(() {
@@ -52,6 +75,76 @@ class _MyPetState extends State<MyPet> {
             "Could not generate grooming tips. Please try again later.";
         _isLoading = false;
       });
+      print("Error loading pet care info: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>?> _getPetCareInfoFromFirestore() async {
+    try {
+      // Query to find the pet document by matching properties
+      final QuerySnapshot petSnapshot =
+          await FirebaseFirestore.instance
+              .collection("pets")
+              .where("petName", isEqualTo: widget.pet.name)
+              .where("petBreed", isEqualTo: widget.pet.breed)
+              .get();
+
+      if (petSnapshot.docs.isNotEmpty) {
+        // Get the first matching pet document
+        final petDoc = petSnapshot.docs.first;
+
+        // Try to get the care info document
+        final careInfoDoc =
+            await FirebaseFirestore.instance
+                .collection("pets")
+                .doc(petDoc.id)
+                .collection("information")
+                .doc("careInfo")
+                .get();
+
+        // If the document exists and has data, return it
+        if (careInfoDoc.exists && careInfoDoc.data() != null) {
+          return careInfoDoc.data()!;
+        }
+      }
+      return null; // Return null if no data found
+    } catch (e) {
+      print("Error retrieving pet care info from Firestore: $e");
+      return null;
+    }
+  }
+
+  Future<void> _savePetCareInfoToFirestore({
+    required String feedingInfo,
+    required String groomingTips,
+  }) async {
+    try {
+      // Query to find the pet document by matching properties
+      final QuerySnapshot petSnapshot =
+          await FirebaseFirestore.instance
+              .collection("pets")
+              .where("petName", isEqualTo: widget.pet.name)
+              .where("petBreed", isEqualTo: widget.pet.breed)
+              .get();
+
+      if (petSnapshot.docs.isNotEmpty) {
+        // Get the first matching pet document
+        final petDoc = petSnapshot.docs.first;
+
+        // Create or update the information subcollection
+        await FirebaseFirestore.instance
+            .collection("pets")
+            .doc(petDoc.id)
+            .collection("information")
+            .doc("careInfo") // Use a fixed document ID for easier retrieval
+            .set({
+              "feedingInfo": feedingInfo,
+              "groomingTips": groomingTips,
+              "lastUpdated": FieldValue.serverTimestamp(),
+            });
+      }
+    } catch (e) {
+      print("Error saving pet care info to Firestore: $e");
     }
   }
 
@@ -119,7 +212,7 @@ class _MyPetState extends State<MyPet> {
           _isLoading
               ? Container()
               : ElevatedButton(
-                onPressed: _loadPetCareInfo,
+                onPressed: () => _loadPetCareInfo(forceRegenerate: true),
                 child: const Text("Regenerate Care Info"),
               ),
         ],

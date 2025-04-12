@@ -21,7 +21,7 @@ class GeminiService {
     required double weight,
   }) async {
     try {
-      final apiKey = dotenv.env['GEMINI_API_KEY'];
+      final apiKey = dotenv.env['GEMINI_FLASH_API_KEY'];
 
       if (apiKey == null) {
         throw Exception('GEMINI_API_KEY not found in .env file');
