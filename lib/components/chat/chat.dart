@@ -104,20 +104,35 @@ class _ChatBoxState extends State<ChatBox> {
   }
 
   Widget _buildPredefinedPrompts() {
-    return Wrap(
-      spacing: 8.0,
-      children:
-          _predefinedPrompts.map((prompt) {
-            return ElevatedButton(
-              onPressed: () async {
-                await _sendMessage(prompt);
-                setState(() {
-                  _showPrompts = false;
-                });
-              },
-              child: Text(prompt),
-            );
-          }).toList(),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Column(
+        children: [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children:
+                _predefinedPrompts.map((prompt) {
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    onPressed: () async {
+                      await _sendMessage(prompt);
+                      setState(() {
+                        _showPrompts = false;
+                      });
+                    },
+                    child: Text(prompt, textAlign: TextAlign.center),
+                  );
+                }).toList(),
+          ),
+        ],
+      ),
     );
   }
 

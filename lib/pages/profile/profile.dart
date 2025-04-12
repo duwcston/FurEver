@@ -10,7 +10,7 @@ class Profile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: appBar(),
+      appBar: appBar(context),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -101,7 +101,6 @@ class Profile extends StatelessWidget {
             const CircleAvatar(
               radius: 50,
               backgroundColor: Colors.white,
-              // Add a avatar image here from Icon
               child: Icon(Icons.account_circle, size: 100, color: Colors.grey),
             ),
             const SizedBox(height: 10),
@@ -119,17 +118,44 @@ class Profile extends StatelessWidget {
     );
   }
 
-  AppBar appBar() {
+  AppBar appBar(BuildContext context) {
     return AppBar(
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () {}),
-      actions: [
-        IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-      ],
-      title: const Text(
-        "Profile",
-        style: TextStyle(color: Colors.black, fontSize: 20),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.pop(context);
+        },
       ),
-      backgroundColor: Colors.white,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.more_vert),
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return SizedBox(
+                  height: 200,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.settings),
+                        title: const Text("Settings"),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.help),
+                        title: const Text("Help"),
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+      title: const Text("Profile"),
     );
   }
 
