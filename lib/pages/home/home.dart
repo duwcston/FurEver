@@ -33,7 +33,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _loadPets();
-    _fetchUpcomingTasks();
+    _loadUpcomingTasks();
   }
 
   Future<void> _loadPets() async {
@@ -47,7 +47,7 @@ class _HomeState extends State<Home> {
     });
   }
 
-  Future<void> _fetchUpcomingTasks() async {
+  Future<void> _loadUpcomingTasks() async {
     final tasks = await _scheduleManager.fetchUpcomingTasks();
     setState(() {
       _upcomingTasks = tasks;
@@ -101,7 +101,7 @@ class _HomeState extends State<Home> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const Schedule()),
-                ).then((_) => _fetchUpcomingTasks()); // Refresh after returning
+                ).then((_) => _loadUpcomingTasks()); // Refresh after returning
               },
               child: const Text(
                 "See All",
@@ -114,6 +114,7 @@ class _HomeState extends State<Home> {
             ),
           ],
         ),
+        const SizedBox(height: 10),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -143,7 +144,7 @@ class _HomeState extends State<Home> {
                           MaterialPageRoute(
                             builder: (context) => const Schedule(),
                           ),
-                        ).then((_) => _fetchUpcomingTasks());
+                        ).then((_) => _loadUpcomingTasks());
                       },
                       child: Container(
                         width: 140,
@@ -242,7 +243,7 @@ class _HomeState extends State<Home> {
                     context,
                     MaterialPageRoute(builder: (context) => const Schedule()),
                   ).then(
-                    (_) => _fetchUpcomingTasks(),
+                    (_) => _loadUpcomingTasks(),
                   ); // Refresh after returning
                 },
                 child: Column(
@@ -283,7 +284,7 @@ class _HomeState extends State<Home> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           child: Row(

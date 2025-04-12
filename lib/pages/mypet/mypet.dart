@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furever/models/pet.dart';
+import 'package:furever/services/gemini_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyPet extends StatefulWidget {
   const MyPet({super.key, required this.pet});
@@ -11,6 +13,141 @@ class MyPet extends StatefulWidget {
 }
 
 class _MyPetState extends State<MyPet> {
+  bool _isLoading = true;
+  String _feedingInfo = "Loading...";
+  String _groomingTips = "Loading...";
+  final GeminiService _geminiService = GeminiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPetCareInfo(forceRegenerate: false);
+  }
+
+  Future<void> _loadPetCareInfo({bool forceRegenerate = false}) async {
+    setState(() {
+      _isLoading = true;
+      _feedingInfo = "Loading feeding recommendations...";
+      _groomingTips = "Loading grooming tips...";
+    });
+
+    try {
+      // First try to get existing care info from Firestore
+      if (!forceRegenerate) {
+        final existingCareInfo = await _getPetCareInfoFromFirestore();
+
+        if (existingCareInfo != null) {
+          // Use existing data from Firestore
+          setState(() {
+            _feedingInfo = existingCareInfo['feedingInfo'];
+            _groomingTips = existingCareInfo['groomingTips'];
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+
+      // If no existing data or forced regenerate, call Gemini API
+      final petCareInfo = await _geminiService.generatePetCareInfo(
+        petName: widget.pet.name,
+        breed: widget.pet.breed,
+        sex: widget.pet.sex,
+        age: widget.pet.age,
+        weight: widget.pet.weight,
+      );
+
+      // Save the information to Firestore
+      await _savePetCareInfoToFirestore(
+        feedingInfo: petCareInfo.feedingInfo,
+        groomingTips: petCareInfo.groomingTips,
+      );
+
+      setState(() {
+        _feedingInfo = petCareInfo.feedingInfo;
+        _groomingTips = petCareInfo.groomingTips;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _feedingInfo =
+            "Could not generate feeding information. Please try again later.";
+        _groomingTips =
+            "Could not generate grooming tips. Please try again later.";
+        _isLoading = false;
+      });
+      print("Error loading pet care info: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>?> _getPetCareInfoFromFirestore() async {
+    try {
+      // Query to find the pet document by matching properties
+      final QuerySnapshot petSnapshot =
+          await FirebaseFirestore.instance
+              .collection("pets")
+              .where("petName", isEqualTo: widget.pet.name)
+              .where("petBreed", isEqualTo: widget.pet.breed)
+              .get();
+
+      if (petSnapshot.docs.isNotEmpty) {
+        // Get the first matching pet document
+        final petDoc = petSnapshot.docs.first;
+
+        // Try to get the care info document
+        final careInfoDoc =
+            await FirebaseFirestore.instance
+                .collection("pets")
+                .doc(petDoc.id)
+                .collection("information")
+                .doc("careInfo")
+                .get();
+
+        // If the document exists and has data, return it
+        if (careInfoDoc.exists && careInfoDoc.data() != null) {
+          return careInfoDoc.data()!;
+        }
+      }
+      return null; // Return null if no data found
+    } catch (e) {
+      print("Error retrieving pet care info from Firestore: $e");
+      return null;
+    }
+  }
+
+  Future<void> _savePetCareInfoToFirestore({
+    required String feedingInfo,
+    required String groomingTips,
+  }) async {
+    try {
+      // Query to find the pet document by matching properties
+      final QuerySnapshot petSnapshot =
+          await FirebaseFirestore.instance
+              .collection("pets")
+              .where("petName", isEqualTo: widget.pet.name)
+              .where("petBreed", isEqualTo: widget.pet.breed)
+              .get();
+
+      if (petSnapshot.docs.isNotEmpty) {
+        // Get the first matching pet document
+        final petDoc = petSnapshot.docs.first;
+
+        // Create or update the information subcollection
+        await FirebaseFirestore.instance
+            .collection("pets")
+            .doc(petDoc.id)
+            .collection("information")
+            .doc("careInfo") // Use a fixed document ID for easier retrieval
+            .set({
+              "feedingInfo": feedingInfo,
+              "groomingTips": groomingTips,
+              "lastUpdated": FieldValue.serverTimestamp(),
+            });
+      }
+    } catch (e) {
+      print("Error saving pet care info to Firestore: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,9 +158,11 @@ class _MyPetState extends State<MyPet> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [_petInfo()],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [_petInfo()],
+            ),
           ),
         ),
       ),
@@ -57,22 +196,44 @@ class _MyPetState extends State<MyPet> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            "Feed Buddy twice a day with high-quality dog food. Ensure fresh water is always available.",
-            style: TextStyle(fontSize: 16),
-          ),
+          _isLoading
+              ? _loadingIndicator()
+              : Text(_feedingInfo, style: TextStyle(fontSize: 16)),
           const SizedBox(height: 16),
           Text(
             "Grooming Tips",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            "Brush Buddy's coat daily to prevent matting. Bathe him once a month or as needed.",
-            style: TextStyle(fontSize: 16),
-          ),
+          _isLoading
+              ? _loadingIndicator()
+              : Text(_groomingTips, style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 16),
+          _isLoading
+              ? Container()
+              : ElevatedButton(
+                onPressed: () => _loadPetCareInfo(forceRegenerate: true),
+                child: const Text("Regenerate Care Info"),
+              ),
         ],
       ),
+    );
+  }
+
+  Widget _loadingIndicator() {
+    return const Row(
+      children: [
+        SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        SizedBox(width: 10),
+        Text(
+          "Generating with AI...",
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
+      ],
     );
   }
 
