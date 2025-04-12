@@ -22,6 +22,12 @@ class _AddPetFormState extends State<AddPetForm> {
   int? age;
   double? weight;
 
+  @override
+  void initState() {
+    super.initState();
+    sex = 'Male'; // Default value for sex
+  }
+
   Future<void> uploadPetToDb() async {
     try {
       final data = await FirebaseFirestore.instance.collection("pets").add({
@@ -70,32 +76,56 @@ class _AddPetFormState extends State<AddPetForm> {
                 breed = value;
               },
             ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Sex'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter the sex';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                sex = value;
-              },
+            Row(
+              children: [
+                const Text('Sex:'),
+                Radio<String>(
+                  value: 'Male',
+                  groupValue: sex,
+                  onChanged: (value) {
+                    setState(() {
+                      sex = value;
+                    });
+                  },
+                ),
+                const Text('Male'),
+                Radio<String>(
+                  value: 'Female',
+                  groupValue: sex,
+                  onChanged: (value) {
+                    setState(() {
+                      sex = value;
+                    });
+                  },
+                ),
+                const Text('Female'),
+              ],
             ),
-            TextFormField(
+            DropdownButtonFormField<int>(
               decoration: const InputDecoration(labelText: 'Age'),
-              keyboardType: TextInputType.number,
+              value: age,
+              items:
+                  List.generate(33, (index) => index)
+                      .map(
+                        (value) => DropdownMenuItem<int>(
+                          value: value,
+                          child: Text(value.toString()),
+                        ),
+                      )
+                      .toList(),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter the age';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Please enter a valid number';
+                if (value == null) {
+                  return 'Please select an age';
                 }
                 return null;
               },
+              onChanged: (value) {
+                setState(() {
+                  age = value;
+                });
+              },
               onSaved: (value) {
-                age = int.parse(value!);
+                age = value;
               },
             ),
             TextFormField(

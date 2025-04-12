@@ -19,17 +19,26 @@ class ChatBox extends StatefulWidget {
 class _ChatBoxState extends State<ChatBox> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
+  final List<String> _predefinedPrompts = [
+    'Should I have my dog spayed/neutered?',
+    'Guide me on how to feed my 2-year-old Border Collie?',
+    'Grooming tips for dogs?',
+    'How to train my dog to sit?',
+    'What are the best toys for a puppy?',
+    'How often should I walk my dog?',
+  ];
+  bool _showPrompts = true;
 
-  Future<void> _sendMessage() async {
-    String userMessage = _controller.text.trim();
-    if (userMessage.isNotEmpty) {
+  Future<void> _sendMessage(String message) async {
+    if (message.isNotEmpty) {
       await Future.delayed(
         Duration(milliseconds: 200),
       ); // Simulating async operation
       setState(() {
-        _messages.add({"role": "user", "text": userMessage});
-        _controller.clear();
+        _messages.add({"role": "user", "text": message});
+        _showPrompts = false; // Close prompts immediately after sending
       });
+      _controller.clear();
     }
     final headers = {
       'Content-Type': 'application/json',
@@ -40,7 +49,7 @@ class _ChatBoxState extends State<ChatBox> {
       "contents": [
         {
           "parts": [
-            {"text": userMessage},
+            {"text": message},
           ],
         },
       ],
@@ -82,7 +91,33 @@ class _ChatBoxState extends State<ChatBox> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Chat Box')),
-      body: SafeArea(child: Column(children: [_messageField(), _inputField()])),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _messageField(),
+            if (_showPrompts) _buildPredefinedPrompts(),
+            _inputField(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPredefinedPrompts() {
+    return Wrap(
+      spacing: 8.0,
+      children:
+          _predefinedPrompts.map((prompt) {
+            return ElevatedButton(
+              onPressed: () async {
+                await _sendMessage(prompt);
+                setState(() {
+                  _showPrompts = false;
+                });
+              },
+              child: Text(prompt),
+            );
+          }).toList(),
     );
   }
 
@@ -102,7 +137,10 @@ class _ChatBoxState extends State<ChatBox> {
           ),
           IconButton(
             icon: Icon(Icons.send, color: Colors.blue),
-            onPressed: () async => await _sendMessage(),
+            onPressed: () async {
+              await _sendMessage(_controller.text.trim());
+              _controller.clear();
+            },
           ),
         ],
       ),
@@ -138,13 +176,13 @@ class _ChatBoxState extends State<ChatBox> {
               padding: EdgeInsets.all(8.0),
               margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
               decoration: BoxDecoration(
-                color: Colors.blueAccent,
+                color: isUserMessage ? Colors.grey[200] : Colors.blueAccent,
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Text(
                 message['text']!,
                 style: TextStyle(
-                  color: isUserMessage ? Colors.white : Colors.black,
+                  color: isUserMessage ? Colors.black : Colors.white,
                 ),
               ),
             ),
