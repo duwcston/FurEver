@@ -1,4 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+
+final String geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+final String projectID = dotenv.env['GOOGLE_PROJECT_ID'] ?? '';
 
 class ChatBox extends StatefulWidget {
   const ChatBox({super.key});
@@ -11,16 +18,62 @@ class ChatBox extends StatefulWidget {
 
 class _ChatBoxState extends State<ChatBox> {
   final TextEditingController _controller = TextEditingController();
-  final List<String> _messages = [];
+  final List<Map<String, String>> _messages = [];
 
   Future<void> _sendMessage() async {
-    if (_controller.text.isNotEmpty) {
+    String userMessage = _controller.text.trim();
+    if (userMessage.isNotEmpty) {
       await Future.delayed(
         Duration(milliseconds: 200),
       ); // Simulating async operation
       setState(() {
-        _messages.add(_controller.text);
+        _messages.add({"role": "user", "text": userMessage});
         _controller.clear();
+      });
+    }
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $geminiApiKey',
+      'x-goog-user-project': projectID,
+    };
+    final data = {
+      "contents": [
+        {
+          "parts": [
+            {"text": userMessage},
+          ],
+        },
+      ],
+    };
+    final url = Uri.parse(
+      'https://generativelanguage.googleapis.com/v1beta/tunedModels/dogdiseaseprediction-d38f6lnraqya:generateContent',
+    );
+    try {
+      final res = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(data),
+      );
+      if (res.statusCode == 200) {
+        final jsonData = jsonDecode(res.body);
+        final candidate = jsonData['candidates'][0];
+        final content = candidate['content'];
+        final part = content['parts'];
+        final text = part[0]['text'];
+        setState(() {
+          _messages.add({"role": "ai", "text": text});
+        });
+      } else {
+        setState(() {
+          _messages.add({
+            "role": "ai",
+            "text": "Error: Unable to fetch response",
+          });
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _messages.add({"role": "ai", "text": "Error: $e"});
       });
     }
   }
@@ -58,7 +111,7 @@ class _ChatBoxState extends State<ChatBox> {
 
   Expanded _messageField() {
     final ScrollController scrollController = ScrollController();
-    
+
     // Scroll to bottom after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_messages.isNotEmpty) {
@@ -69,24 +122,29 @@ class _ChatBoxState extends State<ChatBox> {
         );
       }
     });
-    
+
     return Expanded(
       child: ListView.builder(
         controller: scrollController,
         itemCount: _messages.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Text(
-                  _messages[index],
-                  style: TextStyle(color: Colors.white),
+          final message = _messages[index];
+          final isUserMessage = message['role'] == 'user';
+
+          return Align(
+            alignment:
+                isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Text(
+                message['text']!,
+                style: TextStyle(
+                  color: isUserMessage ? Colors.white : Colors.black,
                 ),
               ),
             ),
